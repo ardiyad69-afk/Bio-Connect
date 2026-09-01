@@ -82,13 +82,13 @@ export function LinkListItem({
         role="switch"
         aria-checked={link.isActive}
         onClick={() => onUpdate(link.id, { isActive: !link.isActive })}
-        className={`relative h-5 w-9 rounded-full transition-colors ${
+        className={`inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
           link.isActive ? "bg-violet-600" : "bg-white/15"
         }`}
       >
         <span
-          className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
-            link.isActive ? "translate-x-4" : "translate-x-0.5"
+          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+            link.isActive ? "translate-x-5" : "translate-x-1"
           }`}
         />
       </button>

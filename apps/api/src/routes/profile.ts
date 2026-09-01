@@ -26,6 +26,12 @@ export const profileRoutes = new Elysia({ prefix: "/profile" })
 
     const [existing] = await db.select({ id: profiles.id }).from(profiles).where(conditions).limit(1);
     return { available: !existing };
+  }, {
+    detail: {
+      tags: ["Profile"],
+      summary: "Check username availability",
+      description: "Public. If called while logged in, the caller's own username doesn't count as taken.",
+    },
   })
   .use(requireAuth)
   .get("/", async ({ currentUserId, set }) => {
@@ -35,6 +41,12 @@ export const profileRoutes = new Elysia({ prefix: "/profile" })
       return { error: "Profil tidak ditemukan" };
     }
     return profile;
+  }, {
+    detail: {
+      tags: ["Profile"],
+      summary: "Get the current user's profile",
+      security: [{ sessionCookie: [] }],
+    },
   })
   .patch("/", async ({ currentUserId, body, set }) => {
     const parsed = parseBody(updateProfileSchema, body);
@@ -61,4 +73,39 @@ export const profileRoutes = new Elysia({ prefix: "/profile" })
       .returning();
 
     return updated;
-  }, { body: t.Unknown() });
+  }, {
+    body: t.Unknown(),
+    detail: {
+      tags: ["Profile"],
+      summary: "Update the current user's profile",
+      description: "All fields optional — only send what changed. `avatarUrl: \"\"` clears the avatar.",
+      security: [{ sessionCookie: [] }],
+      requestBody: {
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              properties: {
+                displayName: { type: "string", minLength: 1, maxLength: 60 },
+                bio: { type: "string", maxLength: 280 },
+                avatarUrl: { type: "string" },
+                themeColor: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" },
+                socials: {
+                  type: "object",
+                  properties: {
+                    instagram: { type: "string" },
+                    twitter: { type: "string" },
+                    tiktok: { type: "string" },
+                    youtube: { type: "string" },
+                    github: { type: "string" },
+                    linkedin: { type: "string" },
+                  },
+                },
+              },
+            },
+            example: { displayName: "Kiki Amelia", bio: "Content creator", themeColor: "#7c3aed" },
+          },
+        },
+      },
+    },
+  });

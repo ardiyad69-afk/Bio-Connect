@@ -9,11 +9,13 @@
     "dev": "tsx watch --env-file=.env src/index.ts",
     "build": "tsup src/index.ts --format esm --target node22 --clean",
     "start": "node --env-file=.env dist/index.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.2.0",
     "@elysiajs/node": "^1.2.0",
+    "@elysiajs/swagger": "^1.2.0",
     "@node-rs/argon2": "^2.0.2",
     "@repo/db": "workspace:*",
     "@repo/shared": "workspace:*",
@@ -22,8 +24,10 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/node": "^22.10.0",
     "tsup": "^8.3.5",
     "tsx": "^4.19.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.8"
   }
 }

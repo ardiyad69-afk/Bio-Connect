@@ -56,7 +56,30 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     });
 
     return { id: user.id, email: user.email, username: input.username };
-  }, { body: t.Unknown() })
+  }, {
+    body: t.Unknown(),
+    detail: {
+      tags: ["Auth"],
+      summary: "Create an account",
+      description: "Creates a user + a 1:1 profile in one call, then logs the new user in (sets the session cookie).",
+      requestBody: {
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              required: ["email", "password", "username"],
+              properties: {
+                email: { type: "string", format: "email" },
+                password: { type: "string", minLength: 8 },
+                username: { type: "string", minLength: 3, maxLength: 30, pattern: "^[a-z0-9][a-z0-9_-]*[a-z0-9]$" },
+              },
+            },
+            example: { email: "kiki@example.com", password: "password123", username: "kiki" },
+          },
+        },
+      },
+    },
+  })
   .post("/login", async ({ body, cookie, set }) => {
     const parsed = parseBody(loginSchema, body);
     if (!parsed.success) {
@@ -83,7 +106,29 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     });
 
     return { id: user.id, email: user.email };
-  }, { body: t.Unknown() })
+  }, {
+    body: t.Unknown(),
+    detail: {
+      tags: ["Auth"],
+      summary: "Log in",
+      description: "Verifies email + password and sets the session cookie.",
+      requestBody: {
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              required: ["email", "password"],
+              properties: {
+                email: { type: "string", format: "email" },
+                password: { type: "string" },
+              },
+            },
+            example: { email: "kiki@example.com", password: "password123" },
+          },
+        },
+      },
+    },
+  })
   .post("/logout", async ({ cookie, set }) => {
     const token = cookie[env.SESSION_COOKIE_NAME]?.value as string | undefined;
     if (token) {
@@ -91,6 +136,13 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
       cookie[env.SESSION_COOKIE_NAME]?.remove();
     }
     set.status = 204;
+  }, {
+    detail: {
+      tags: ["Auth"],
+      summary: "Log out",
+      description: "Revokes the current session and clears the cookie.",
+      security: [{ sessionCookie: [] }],
+    },
   })
   .get("/me", async ({ currentUserId, set }) => {
     if (!currentUserId) {
@@ -105,4 +157,10 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     }
 
     return user;
+  }, {
+    detail: {
+      tags: ["Auth"],
+      summary: "Get the current user",
+      security: [{ sessionCookie: [] }],
+    },
   });
