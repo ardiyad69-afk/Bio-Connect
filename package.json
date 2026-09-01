@@ -1,0 +1,21 @@
+{
+  "name": "bio-connect",
+  "private": true,
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter=./apps/* dev",
+    "build": "pnpm --recursive --filter=./apps/* build",
+    "lint": "pnpm --recursive --if-present lint",
+    "typecheck": "pnpm --recursive --if-present typecheck",
+    "db:generate": "pnpm --filter @repo/db generate",
+    "db:migrate": "pnpm --filter @repo/db migrate",
+    "db:seed": "pnpm --filter @repo/db seed"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.10.0"
+  }
+}
