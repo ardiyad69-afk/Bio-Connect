@@ -8,7 +8,6 @@ function required(name: string): string {
 
 export const env = {
   PORT: Number(process.env.API_PORT ?? 3001),
-  CORS_ORIGIN: process.env.CORS_ORIGIN ?? "http://localhost:3000",
   SESSION_COOKIE_NAME: process.env.SESSION_COOKIE_NAME ?? SESSION_COOKIE_NAME,
   NODE_ENV: process.env.NODE_ENV ?? "development",
   get DATABASE_URL() {
