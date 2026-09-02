@@ -1,4 +1,4 @@
-import type { Socials } from "./schemas/profile";
+import type { ProfileTheme, Socials } from "./schemas/profile";
 
 export interface User {
   id: string;
@@ -14,6 +14,7 @@ export interface Profile {
   bio: string;
   avatarUrl: string | null;
   themeColor: string;
+  theme: ProfileTheme;
   isVerified: boolean;
   socials: Socials;
   createdAt: string;

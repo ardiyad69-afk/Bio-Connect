@@ -8,6 +8,7 @@ import { createSession, revokeSession, SESSION_TTL_SECONDS } from "../lib/sessio
 import { parseBody } from "../lib/validate";
 import { env } from "../lib/env";
 import { authContext } from "../middleware/auth";
+import { errorResponse } from "../lib/responses";
 
 export const authRoutes = new Elysia({ prefix: "/auth" })
   .use(authContext)
@@ -78,6 +79,12 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
           },
         },
       },
+      responses: {
+        200: { description: "`{ id, email, username }` — also sets the session cookie" },
+        400: errorResponse("Validation failed"),
+        409: errorResponse("Email or username already taken"),
+        500: errorResponse("User insert failed unexpectedly"),
+      },
     },
   })
   .post("/login", async ({ body, cookie, set }) => {
@@ -127,6 +134,11 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
           },
         },
       },
+      responses: {
+        200: { description: "`{ id, email }` — also sets the session cookie" },
+        400: errorResponse("Validation failed"),
+        401: errorResponse("Email or password incorrect"),
+      },
     },
   })
   .post("/logout", async ({ cookie, set }) => {
@@ -142,6 +154,9 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
       summary: "Log out",
       description: "Revokes the current session and clears the cookie.",
       security: [{ sessionCookie: [] }],
+      responses: {
+        204: { description: "Logged out — no body" },
+      },
     },
   })
   .get("/me", async ({ currentUserId, set }) => {
@@ -162,5 +177,9 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
       tags: ["Auth"],
       summary: "Get the current user",
       security: [{ sessionCookie: [] }],
+      responses: {
+        200: { description: "`{ id, email }`" },
+        401: errorResponse("No active session"),
+      },
     },
   });

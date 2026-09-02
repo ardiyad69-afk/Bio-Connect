@@ -1,10 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Profile, Socials } from "@repo/shared";
+import type { Profile, ProfileTheme, Socials } from "@repo/shared";
 import { updateProfileAction } from "@/lib/actions/profile";
+import { Input, Textarea } from "@/components/ui/input";
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
+
+const THEME_OPTIONS: { value: ProfileTheme; label: string; description: string }[] = [
+  { value: "default", label: "Default", description: "Glass gelap, lembut" },
+  { value: "neo-brutalism", label: "Neo-Brutalism", description: "Border tebal, bayangan keras" },
+];
 
 const SOCIAL_FIELDS: { key: keyof Socials; label: string; placeholder: string }[] = [
   { key: "instagram", label: "Instagram", placeholder: "username" },
@@ -44,6 +50,7 @@ export function ProfileForm({
         bio: form.bio,
         avatarUrl: form.avatarUrl ?? "",
         themeColor: form.themeColor,
+        theme: form.theme,
         socials: form.socials,
       });
       setStatus(result.error ? "error" : "saved");
@@ -51,7 +58,7 @@ export function ProfileForm({
 
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.displayName, form.bio, form.avatarUrl, form.themeColor, form.socials]);
+  }, [form.displayName, form.bio, form.avatarUrl, form.themeColor, form.theme, form.socials]);
 
   function update<K extends keyof Profile>(key: K, value: Profile[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -62,37 +69,34 @@ export function ProfileForm({
   }
 
   return (
-    <section className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-6">
+    <section className="space-y-4 rounded-2xl border border-foreground/10 bg-foreground/5 p-6">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold">Profil</h2>
+        <h2 className="font-semibold tracking-tight">Profil</h2>
         <SaveIndicator status={status} />
       </div>
 
       <Field label="Nama tampilan">
-        <input
+        <Input
           value={form.displayName}
           onChange={(e) => update("displayName", e.target.value)}
           maxLength={60}
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 outline-none focus:border-violet-500"
         />
       </Field>
 
       <Field label="Bio">
-        <textarea
+        <Textarea
           value={form.bio}
           onChange={(e) => update("bio", e.target.value)}
           maxLength={280}
           rows={3}
-          className="w-full resize-none rounded-lg border border-white/10 bg-white/5 px-3 py-2 outline-none focus:border-violet-500"
         />
       </Field>
 
       <Field label="URL Avatar">
-        <input
+        <Input
           value={form.avatarUrl ?? ""}
           onChange={(e) => update("avatarUrl", e.target.value)}
           placeholder="https://..."
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 outline-none focus:border-violet-500"
         />
       </Field>
 
@@ -102,22 +106,43 @@ export function ProfileForm({
             type="color"
             value={form.themeColor}
             onChange={(e) => update("themeColor", e.target.value)}
-            className="h-9 w-14 cursor-pointer rounded border border-white/10 bg-transparent"
+            className="h-9 w-14 cursor-pointer rounded border border-foreground/10 bg-transparent"
           />
-          <span className="text-sm text-white/50">{form.themeColor}</span>
+          <span className="text-sm text-foreground/50">{form.themeColor}</span>
         </div>
       </Field>
 
-      <div className="space-y-2 border-t border-white/10 pt-4">
-        <p className="text-sm text-white/70">Media sosial</p>
+      <Field label="Tema halaman">
+        <div className="grid grid-cols-2 gap-3">
+          {THEME_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => update("theme", opt.value)}
+              aria-pressed={form.theme === opt.value}
+              className={`flex flex-col items-center gap-2 rounded-lg border p-3 transition-colors ${
+                form.theme === opt.value
+                  ? "border-violet-500 bg-violet-500/10"
+                  : "border-foreground/10 hover:border-foreground/25"
+              }`}
+            >
+              <ThemeSwatch value={opt.value} />
+              <span className="text-xs font-medium text-foreground">{opt.label}</span>
+              <span className="text-[11px] text-foreground/50">{opt.description}</span>
+            </button>
+          ))}
+        </div>
+      </Field>
+
+      <div className="space-y-2 border-t border-foreground/10 pt-4">
+        <p className="text-sm text-foreground/70">Media sosial</p>
         <div className="grid grid-cols-2 gap-3">
           {SOCIAL_FIELDS.map(({ key, label, placeholder }) => (
             <Field key={key} label={label}>
-              <input
+              <Input
                 value={form.socials[key] ?? ""}
                 onChange={(e) => updateSocial(key, e.target.value)}
                 placeholder={placeholder}
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm outline-none focus:border-violet-500"
               />
             </Field>
           ))}
@@ -130,15 +155,28 @@ export function ProfileForm({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block space-y-1">
-      <span className="text-sm text-white/70">{label}</span>
+      <span className="text-sm text-foreground/70">{label}</span>
       {children}
     </label>
+  );
+}
+
+function ThemeSwatch({ value }: { value: ProfileTheme }) {
+  if (value === "neo-brutalism") {
+    return (
+      <div className="h-10 w-14 border-2 border-black bg-[#FDF6E9] shadow-[2px_2px_0_0_#000]" aria-hidden />
+    );
+  }
+  return (
+    <div className="relative h-10 w-14 overflow-hidden rounded-lg border border-white/10 bg-zinc-900" aria-hidden>
+      <div className="absolute -left-2 -top-2 h-6 w-6 rounded-full bg-violet-500 blur-md" />
+    </div>
   );
 }
 
 function SaveIndicator({ status }: { status: SaveStatus }) {
   if (status === "idle") return null;
   const text = { saving: "Menyimpan...", saved: "Tersimpan", error: "Gagal menyimpan" }[status];
-  const color = { saving: "text-white/40", saved: "text-emerald-400", error: "text-red-400" }[status];
+  const color = { saving: "text-foreground/40", saved: "text-emerald-400", error: "text-red-400" }[status];
   return <span className={`text-xs ${color}`}>{text}</span>;
 }

@@ -40,6 +40,7 @@ export const profiles = pgTable("profiles", {
   bio: text("bio").notNull().default(""),
   avatarUrl: text("avatar_url"),
   themeColor: text("theme_color").notNull().default("#7c3aed"),
+  theme: text("theme").notNull().default("default"),
   isVerified: boolean("is_verified").notNull().default(false),
   socials: jsonb("socials").$type<Socials>().notNull().default({}),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

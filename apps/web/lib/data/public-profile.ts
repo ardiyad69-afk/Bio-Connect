@@ -2,7 +2,7 @@ import { unstable_cache } from "next/cache";
 import { eq, and } from "drizzle-orm";
 import { db } from "@repo/db";
 import { profiles, links } from "@repo/db/schema";
-import type { PublicProfile } from "@repo/shared";
+import { profileThemeSchema, type PublicProfile } from "@repo/shared";
 
 // Direct DB read from the Server Component, bypassing the API entirely —
 // this is the hot path for every visit to a bio page, so it must not pay
@@ -20,6 +20,10 @@ async function fetchPublicProfile(username: string): Promise<PublicProfile | nul
 
   return {
     ...profile,
+    // The column is a plain `text` at the DB layer; narrow it to the known
+    // template set here, falling back to "default" for any stale/invalid
+    // value rather than crashing this hot, uncached-on-error public path.
+    theme: profileThemeSchema.catch("default").parse(profile.theme),
     createdAt: profile.createdAt.toISOString(),
     updatedAt: profile.updatedAt.toISOString(),
     links: profileLinks.map((link) => ({

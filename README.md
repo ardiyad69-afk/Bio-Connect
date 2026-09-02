@@ -1,4 +1,4 @@
-# BioConnect
+# LinkStart
 
 Multi-user bio link platform (Linktree clone). Arsitektur lengkap ada di [issue.md](./issue.md).
 

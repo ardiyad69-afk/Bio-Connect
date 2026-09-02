@@ -1,33 +1,34 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "motion/react";
 import { ExternalLink, LogOut } from "lucide-react";
 import { logoutAction } from "@/lib/actions/auth";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { fadeUpFast } from "@/lib/motion";
 
 export function DashboardHeader({ username }: { username: string }) {
   return (
-    <header className="flex items-center justify-between border-b border-white/10 pb-4">
+    <motion.header
+      variants={fadeUpFast}
+      className="flex items-center justify-between border-b border-foreground/10 pb-4"
+    >
       <div>
-        <h1 className="text-lg font-semibold">Dashboard</h1>
-        <p className="text-sm text-white/50">bioconnect.app/{username}</p>
+        <h1 className="text-lg font-semibold tracking-tight">Dashboard</h1>
+        <p className="text-sm text-foreground/50">linkstart.app/{username}</p>
       </div>
       <div className="flex items-center gap-3">
-        <Link
-          href={`/${username}`}
-          target="_blank"
-          className="flex items-center gap-1.5 rounded-full border border-white/10 px-4 py-2 text-sm hover:bg-white/5"
-        >
+        <ThemeToggle />
+        <Link href={`/${username}`} target="_blank" className={buttonVariants({ variant: "outline", size: "sm" })}>
           Lihat halaman <ExternalLink size={14} />
         </Link>
         <form action={logoutAction}>
-          <button
-            type="submit"
-            className="flex items-center gap-1.5 rounded-full border border-white/10 px-4 py-2 text-sm hover:bg-white/5"
-          >
+          <Button type="submit" variant="outline" size="sm">
             <LogOut size={14} /> Keluar
-          </button>
+          </Button>
         </form>
       </div>
-    </header>
+    </motion.header>
   );
 }

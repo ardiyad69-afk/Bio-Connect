@@ -76,7 +76,8 @@ describe("/profile", () => {
 
   it("check-username: rejects a reserved name", async () => {
     const res = await app.handle(new Request("http://localhost/profile/check-username?u=dashboard"));
-    const body = await json<{ available: boolean }>(res);
-    expect(body.available).toBe(false);
+    const body = await json<{ error: string }>(res);
+    expect(res.status).toBe(400);
+    expect(body.error).toBeTruthy();
   });
 });

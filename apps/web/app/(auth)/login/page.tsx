@@ -2,7 +2,13 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
 import { loginAction } from "@/lib/actions/auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { AuthGradientBackground } from "@/components/ui/auth-gradient-background";
+import { fadeUp } from "@/lib/motion";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -20,54 +26,68 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-950 px-6 text-white">
-      <form
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-6 text-foreground">
+      <AuthGradientBackground />
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.1 }}>
+        <ThemeToggle className="absolute right-6 top-6" />
+      </motion.div>
+
+      <motion.form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm space-y-4 rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl"
+        initial="hidden"
+        animate="visible"
+        variants={fadeUp}
+        className="relative w-full max-w-sm space-y-4 rounded-2xl border border-foreground/10 bg-background/70 p-8 backdrop-blur-xl"
       >
-        <h1 className="text-xl font-semibold">Masuk ke BioConnect</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Masuk ke LinkStart</h1>
 
         <div className="space-y-1">
-          <label htmlFor="email" className="text-sm text-white/70">Email</label>
-          <input
+          <label htmlFor="email" className="text-sm text-foreground/70">Email</label>
+          <Input
             id="email"
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 outline-none focus:border-violet-500"
           />
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="password" className="text-sm text-white/70">Password</label>
-          <input
+          <label htmlFor="password" className="text-sm text-foreground/70">Password</label>
+          <Input
             id="password"
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 outline-none focus:border-violet-500"
           />
         </div>
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        <AnimatePresence>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="text-sm text-red-400"
+            >
+              {error}
+            </motion.p>
+          )}
+        </AnimatePresence>
 
-        <button
-          type="submit"
-          disabled={isPending}
-          className="w-full rounded-lg bg-violet-600 py-2 font-medium transition-colors hover:bg-violet-500 disabled:opacity-50"
-        >
+        <Button type="submit" disabled={isPending} className="w-full">
           {isPending ? "Memproses..." : "Masuk"}
-        </button>
+        </Button>
 
-        <p className="text-center text-sm text-white/50">
+        <p className="text-center text-sm text-foreground/50">
           Belum punya akun?{" "}
           <Link href="/signup" className="text-violet-400 underline underline-offset-4">
             Daftar
           </Link>
         </p>
-      </form>
+      </motion.form>
     </main>
   );
 }
