@@ -1,6 +1,5 @@
 import { Elysia } from "elysia";
 import { node } from "@elysiajs/node";
-import { cors } from "@elysiajs/cors";
 import { swagger } from "@elysiajs/swagger";
 import { env } from "./lib/env";
 import { authRoutes } from "./routes/auth";
@@ -9,15 +8,22 @@ import { linksRoutes } from "./routes/links";
 
 // Separated from index.ts so tests can `.handle()` requests against a real
 // app instance without binding a port — Elysia's app is a Fetch-API-style
-// request handler independent of `.listen()`.
+// request handler independent of `.listen()`. Also imported directly by
+// apps/web (see apps/web/app/api/[[...slugs]]/route.ts) so the API mounts
+// in-process inside the Next.js deployment rather than running as its own
+// server — same origin, so no CORS plugin is needed.
+//
+// Deliberately NOT given an `/api` prefix here: Elysia bakes its prefix
+// into every route's registered path, and Eden Treaty's proxy shape
+// (`client.auth.login.post()`) is derived from those paths — prefixing at
+// this layer would turn every eden call site across apps/web into
+// `client.api.auth.login.post()`. The `/api` segment lives only in the
+// Route Handler's mount path and the browser eden client's base URL
+// instead (see app/api/[[...slugs]]/route.ts and lib/eden.ts), which keeps
+// this app's own route paths — and every existing eden.* call site, and
+// every test in src/routes/*.test.ts — unchanged.
 export function createApp() {
   return new Elysia({ adapter: node() })
-    .use(
-      cors({
-        origin: env.CORS_ORIGIN,
-        credentials: true,
-      })
-    )
     .use(
       swagger({
         path: "/swagger",

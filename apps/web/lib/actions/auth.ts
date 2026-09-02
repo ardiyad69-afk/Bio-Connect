@@ -3,15 +3,21 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SESSION_COOKIE_NAME, SESSION_TTL_SECONDS } from "@repo/shared";
+import { createApp } from "@repo/api/app";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+// Built once per lambda instance; reused across warm invocations.
+const app = createApp();
 
 type ActionResult = { error: string } | { error?: undefined };
 
-// Signup/login/logout call the API with a plain fetch (not Eden) so we have
-// direct access to the raw Set-Cookie header and can forward the session
-// token to the browser via next/headers — Eden's wrapped response doesn't
-// expose that.
+// Signup/login/logout call the API in-process via app.handle() (not Eden)
+// so we have direct access to the raw Set-Cookie header on the Response and
+// can forward the session token to the browser via next/headers — Eden's
+// wrapped response doesn't expose that. This used to be a real HTTP fetch
+// to a separate API origin; now that Elysia is mounted in-process, it's a
+// same-process call with no network hop, but Set-Cookie still has to be
+// forwarded by hand for the same reason: it isn't a browser making this
+// request, so nothing rides it along automatically.
 async function forwardSessionCookie(response: Response) {
   const setCookie = response.headers.getSetCookie().find((c) => c.startsWith(`${SESSION_COOKIE_NAME}=`));
   if (!setCookie) return;
@@ -34,11 +40,13 @@ export async function signupAction(input: {
   password: string;
   username: string;
 }): Promise<ActionResult> {
-  const response = await fetch(`${API_URL}/auth/signup`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(input),
-  });
+  const response = await app.handle(
+    new Request("http://internal/auth/signup", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(input),
+    })
+  );
 
   const data = await response.json();
   if (!response.ok) {
@@ -50,11 +58,13 @@ export async function signupAction(input: {
 }
 
 export async function loginAction(input: { email: string; password: string }): Promise<ActionResult> {
-  const response = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(input),
-  });
+  const response = await app.handle(
+    new Request("http://internal/auth/login", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(input),
+    })
+  );
 
   const data = await response.json();
   if (!response.ok) {
@@ -70,10 +80,12 @@ export async function logoutAction(): Promise<void> {
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
   if (token) {
-    await fetch(`${API_URL}/auth/logout`, {
-      method: "POST",
-      headers: { cookie: `${SESSION_COOKIE_NAME}=${token}` },
-    });
+    await app.handle(
+      new Request("http://internal/auth/logout", {
+        method: "POST",
+        headers: { cookie: `${SESSION_COOKIE_NAME}=${token}` },
+      })
+    );
   }
 
   cookieStore.delete(SESSION_COOKIE_NAME);
