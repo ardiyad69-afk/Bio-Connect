@@ -1,12 +1,14 @@
 "use client";
 
 import { useOptimistic, useState, useTransition } from "react";
+import { motion } from "motion/react";
 import type { CreateLinkInput, Link as LinkModel, Profile, UpdateLinkInput } from "@repo/shared";
 import { DashboardHeader } from "./DashboardHeader";
 import { ProfileForm } from "./ProfileForm";
 import { LinkEditor } from "./LinkEditor";
 import { LivePreview } from "./LivePreview";
 import { createLinkAction, updateLinkAction, deleteLinkAction, reorderLinksAction } from "@/lib/actions/links";
+import { fadeUpFast, staggerContainer } from "@/lib/motion";
 
 type LinkOptimisticAction =
   | { type: "add"; link: LinkModel }
@@ -110,12 +112,17 @@ export function DashboardShell({
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer(0.1)}
+      className="min-h-screen bg-background text-foreground"
+    >
       <div className="mx-auto max-w-6xl px-6 py-6">
         <DashboardHeader username={profile.username} />
 
         <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px]">
-          <div className="space-y-6">
+          <motion.div variants={fadeUpFast} className="space-y-6">
             <ProfileForm profile={profile} onChange={setProfile} />
             <LinkEditor
               links={optimisticLinks}
@@ -125,13 +132,13 @@ export function DashboardShell({
               onDelete={handleDeleteLink}
               onReorder={handleReorderLinks}
             />
-          </div>
+          </motion.div>
 
-          <div className="lg:sticky lg:top-6 lg:h-fit">
+          <motion.div variants={fadeUpFast} className="lg:sticky lg:top-6 lg:h-fit">
             <LivePreview profile={profile} links={optimisticLinks} />
-          </div>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

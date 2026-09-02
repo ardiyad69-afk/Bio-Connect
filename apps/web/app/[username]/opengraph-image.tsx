@@ -3,7 +3,7 @@ import { getPublicProfile } from "@/lib/data/public-profile";
 
 // Node runtime, not edge: the DB client used by getPublicProfile relies on
 // Node's net/tls modules for its raw TCP connection to Postgres.
-export const alt = "BioConnect profile";
+export const alt = "LinkStart profile";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

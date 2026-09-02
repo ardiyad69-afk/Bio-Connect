@@ -9,6 +9,7 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
+import { AnimatePresence } from "motion/react";
 import type { CreateLinkInput, Link as LinkModel, UpdateLinkInput } from "@repo/shared";
 import { AddLinkForm } from "./AddLinkForm";
 import { LinkListItem } from "./LinkListItem";
@@ -41,18 +42,25 @@ export function LinkEditor({
   }
 
   return (
-    <section className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-6">
-      <h2 className="font-semibold">Link</h2>
+    <section className="space-y-4 rounded-2xl border border-foreground/10 bg-foreground/5 p-6">
+      <h2 className="font-semibold tracking-tight">Link</h2>
       <AddLinkForm onAdd={onAdd} disabled={isPending} />
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext
+        id="link-editor"
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
         <SortableContext items={sorted.map((l) => l.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-2">
-            {sorted.map((link) => (
-              <LinkListItem key={link.id} link={link} onUpdate={onUpdate} onDelete={onDelete} />
-            ))}
+            <AnimatePresence initial={false}>
+              {sorted.map((link) => (
+                <LinkListItem key={link.id} link={link} onUpdate={onUpdate} onDelete={onDelete} />
+              ))}
+            </AnimatePresence>
             {sorted.length === 0 && (
-              <p className="py-6 text-center text-sm text-white/40">Belum ada link. Tambahkan di atas.</p>
+              <p className="py-6 text-center text-sm text-foreground/40">Belum ada link. Tambahkan di atas.</p>
             )}
           </div>
         </SortableContext>

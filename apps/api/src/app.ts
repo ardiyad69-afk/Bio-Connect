@@ -23,10 +23,10 @@ export function createApp() {
         path: "/swagger",
         documentation: {
           info: {
-            title: "BioConnect API",
+            title: "LinkStart API",
             version: "0.0.0",
             description:
-              "Auth and mutation API for BioConnect. Public /[username] reads bypass this API entirely and hit Postgres directly from apps/web — see CLAUDE.md.",
+              "Auth and mutation API for LinkStart. Public /[username] reads bypass this API entirely and hit Postgres directly from apps/web — see CLAUDE.md.",
           },
           tags: [
             { name: "Auth", description: "Signup, login, session" },
@@ -39,6 +39,28 @@ export function createApp() {
                 type: "apiKey",
                 in: "cookie",
                 name: env.SESSION_COOKIE_NAME,
+              },
+            },
+            schemas: {
+              // The one standard error shape every route in this API returns
+              // on failure — see apps/api/src/lib/responses.ts.
+              Error: {
+                type: "object",
+                required: ["error"],
+                properties: {
+                  error: { type: "string", description: "Human-readable error message" },
+                  issues: {
+                    type: "array",
+                    description: "Present on 400 responses from Zod validation failures",
+                    items: {
+                      type: "object",
+                      properties: {
+                        path: { type: "array", items: { type: "string" } },
+                        message: { type: "string" },
+                      },
+                    },
+                  },
+                },
               },
             },
           },

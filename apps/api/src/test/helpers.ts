@@ -24,7 +24,7 @@ export function extractCookie(response: Response, name = env.SESSION_COOKIE_NAME
 
 /** Every test file uses its own email/username prefix so parallel test files never collide, and cleanup is a single scoped delete. */
 export function testEmail(prefix: string): string {
-  return `${prefix}-${crypto.randomUUID().slice(0, 8)}@test.bioconnect.invalid`;
+  return `${prefix}-${crypto.randomUUID().slice(0, 8)}@test.linkstart.invalid`;
 }
 
 export function testUsername(prefix: string): string {

@@ -5,6 +5,7 @@ import { links, profiles } from "@repo/db/schema";
 import { createLinkSchema, updateLinkSchema, reorderLinksSchema } from "@repo/shared";
 import { parseBody } from "../lib/validate";
 import { requireAuth } from "../middleware/auth";
+import { errorResponse } from "../lib/responses";
 
 async function getOwnProfileId(userId: string): Promise<string | null> {
   const [profile] = await db.select({ id: profiles.id }).from(profiles).where(eq(profiles.userId, userId)).limit(1);
@@ -31,6 +32,10 @@ export const linksRoutes = new Elysia({ prefix: "/links" })
       tags: ["Links"],
       summary: "Track a click",
       description: "Public — called from the anonymous bio page, not the dashboard.",
+      responses: {
+        204: { description: "Click recorded — no body" },
+        404: errorResponse("Link doesn't exist"),
+      },
     },
   })
   .use(requireAuth)
@@ -47,6 +52,11 @@ export const linksRoutes = new Elysia({ prefix: "/links" })
       summary: "List the current user's links",
       description: "Includes inactive links (the dashboard needs them; the public page filters them out itself).",
       security: [{ sessionCookie: [] }],
+      responses: {
+        200: { description: "Array of the caller's `Link` rows" },
+        401: errorResponse("No active session"),
+        404: errorResponse("Session valid but no profile row exists for this user"),
+      },
     },
   })
   .post("/", async ({ currentUserId, body, set }) => {
@@ -99,6 +109,12 @@ export const linksRoutes = new Elysia({ prefix: "/links" })
           },
         },
       },
+      responses: {
+        201: { description: "The created `Link`" },
+        400: errorResponse("Validation failed"),
+        401: errorResponse("No active session"),
+        404: errorResponse("Session valid but no profile row exists for this user"),
+      },
     },
   })
   .patch("/reorder", async ({ currentUserId, body, set }) => {
@@ -148,6 +164,12 @@ export const linksRoutes = new Elysia({ prefix: "/links" })
             },
           },
         },
+      },
+      responses: {
+        200: { description: "`{ ok: true }`" },
+        400: errorResponse("Validation failed, or orderedIds doesn't exactly match the caller's link ids"),
+        401: errorResponse("No active session"),
+        404: errorResponse("Session valid but no profile row exists for this user"),
       },
     },
   })
@@ -200,6 +222,12 @@ export const linksRoutes = new Elysia({ prefix: "/links" })
           },
         },
       },
+      responses: {
+        200: { description: "The updated `Link`" },
+        400: errorResponse("Validation failed"),
+        401: errorResponse("No active session"),
+        404: errorResponse("Link doesn't exist or isn't owned by the caller"),
+      },
     },
   })
   .delete("/:id", async ({ currentUserId, params, set }) => {
@@ -224,5 +252,10 @@ export const linksRoutes = new Elysia({ prefix: "/links" })
       tags: ["Links"],
       summary: "Delete a link",
       security: [{ sessionCookie: [] }],
+      responses: {
+        204: { description: "Deleted — no body" },
+        401: errorResponse("No active session"),
+        404: errorResponse("Link doesn't exist or isn't owned by the caller"),
+      },
     },
   });

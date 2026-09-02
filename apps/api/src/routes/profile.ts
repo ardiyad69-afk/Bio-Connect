@@ -5,6 +5,7 @@ import { profiles } from "@repo/db/schema";
 import { updateProfileSchema, checkUsernameSchema } from "@repo/shared";
 import { parseBody } from "../lib/validate";
 import { authContext, requireAuth } from "../middleware/auth";
+import { errorResponse } from "../lib/responses";
 
 async function getOwnProfile(userId: string) {
   const [profile] = await db.select().from(profiles).where(eq(profiles.userId, userId)).limit(1);
@@ -17,7 +18,7 @@ export const profileRoutes = new Elysia({ prefix: "/profile" })
     const result = checkUsernameSchema.safeParse(query);
     if (!result.success) {
       set.status = 400;
-      return { available: false, error: "Username tidak valid" };
+      return { error: "Username tidak valid" };
     }
 
     const conditions = currentUserId
@@ -31,6 +32,10 @@ export const profileRoutes = new Elysia({ prefix: "/profile" })
       tags: ["Profile"],
       summary: "Check username availability",
       description: "Public. If called while logged in, the caller's own username doesn't count as taken.",
+      responses: {
+        200: { description: "`{ available: boolean }`" },
+        400: errorResponse("`u` query param missing or malformed"),
+      },
     },
   })
   .use(requireAuth)
@@ -46,6 +51,11 @@ export const profileRoutes = new Elysia({ prefix: "/profile" })
       tags: ["Profile"],
       summary: "Get the current user's profile",
       security: [{ sessionCookie: [] }],
+      responses: {
+        200: { description: "The caller's `Profile`" },
+        401: errorResponse("No active session"),
+        404: errorResponse("Session valid but no profile row exists for this user"),
+      },
     },
   })
   .patch("/", async ({ currentUserId, body, set }) => {
@@ -106,6 +116,12 @@ export const profileRoutes = new Elysia({ prefix: "/profile" })
             example: { displayName: "Kiki Amelia", bio: "Content creator", themeColor: "#7c3aed" },
           },
         },
+      },
+      responses: {
+        200: { description: "The updated `Profile`" },
+        400: errorResponse("Validation failed"),
+        401: errorResponse("No active session"),
+        404: errorResponse("Session valid but no profile row exists for this user"),
       },
     },
   });
