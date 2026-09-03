@@ -8,3 +8,6 @@ dist/
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+.neon
+.vercel
+.env*
