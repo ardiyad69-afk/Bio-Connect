@@ -1,6 +1,6 @@
 # LinkStart
 
-Multi-user bio link platform (Linktree clone). Arsitektur lengkap ada di [issue.md](./issue.md).
+Multi-user bio link platform (Linktree clone). Rencana deployment lengkap ada di [issue #8](https://github.com/ardiyad69-afk/LinkStart/issues/8).
 
 ## Setup
 
